@@ -1,0 +1,16 @@
+---
+# defaults file for postgresql-uninstall.uninstall
+hes_user: xp
+hes_group: data
+nexus_redhat_repo_info:
+  name: Nexus-Repository
+ansible_facts_folder: /etc/ansible/facts.d/
+postgresql_packages:
+  - package: "libicu-50.1.2-17.el7.x86_64"
+  - package: "postgresql11-contrib-11.2-2PGDG.rhel7.x86_64"
+  - package: "postgresql11-libs-11.2-2PGDG.rhel7.x86_64"
+  - package: "postgresql11-11.2-2PGDG.rhel7.x86_64"
+  - package: "postgresql11-server-11.2-2PGDG.rhel7.x86_64"
+  - package: "python-psycopg2.x86_64"
+  - package: "python-ipaddress.noarch"
+  - package: "python2-cryptography.x86_64"

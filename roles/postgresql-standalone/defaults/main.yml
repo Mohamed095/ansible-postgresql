@@ -1,0 +1,45 @@
+---
+# defaults file for postgresql-standal
+
+hes_user: xp
+hes_group: data
+nexus_ip: ""
+nexus_port: 8081
+siconia_nexus_raw_url: "http://{{ nexus_ip }}:{{ nexus_port }}/repository/dyco-raw-group"
+nexus_redhat_repo_info:
+  name: Nexus-Repository
+  description: Nexus-Repository
+  baseurl: "http://{{ nexus_ip }}:{{ nexus_port }}/repository/dyco-yum-group/{{ postgresql_version_major }}/redhat/rhel-$releasever-x86_64/"
+  enabled: yes
+remote_rpm_path: "/tmp/postgresql"
+postgresql_user: "postgres"
+postgresql_group: "postgres"
+remote_postgresql_path: "{{ remote_rpm_path }}/postgresql-packages"
+remote_psycopg_path: "{{ remote_rpm_path }}/python-psycopg"
+postgresql_version: '11.2'
+postgresql_version_major: "{{ postgresql_version.split('.')[0] }}"
+postgresql_version_minor: "{{ postgresql_version .split('.')[1] }}"
+postgresql_name: "postgresql-{{ postgresql_version_major }}"
+postgresql_package_name: "postgresql{{ postgresql_version_major }}-server"
+postgresql_usr_bin: "/usr/pgsql-{{ postgresql_version_major }}/bin/postgresql-{{ postgresql_version_major }}-setup initdb"
+postgresql_data_dir: "/var/lib/pgsql/{{ postgresql_version_major }}/data"
+postgresql_conf_dir: "/var/lib/pgsql/{{ postgresql_version_major }}/data"
+pg_hba_conf : "pg_hba.conf"
+postgresql_conf: "postgresql.conf"
+postgresql_url_repository: "{{ siconia_nexus_raw_url }}/postgresql/bin/{{ postgresql_version_minor }}"
+postgresql_packages:
+  - package: "libicu-50.1.2-17.el7.x86_64"
+  - package: "postgresql11-contrib-11.2-2PGDG.rhel7.x86_64"
+  - package: "postgresql11-libs-11.2-2PGDG.rhel7.x86_64"
+  - package: "postgresql11-11.2-2PGDG.rhel7.x86_64"
+  - package: "postgresql11-server-11.2-2PGDG.rhel7.x86_64"
+common_packages:
+  - package: "python-psycopg2"
+postgresql_hba_entries:
+  - {type: local, database: all, user: all, auth_method: peer}
+  - {type: host, database: all, user: all, address: '0.0.0.0/0', auth_method: md5}
+  - {type: host, database: all, user: all, address: '::1/128', auth_method: ident}
+ansible_facts_folder: "/etc/ansible/facts.d/"
+
+
+

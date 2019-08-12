@@ -1,0 +1,4 @@
+- hosts: pdata
+  remote_user: root
+  roles:
+    - deploy-postgresql-db-common

@@ -1,0 +1,93 @@
+---
+# tasks file for postgresql-db-sla
+
+
+
+- name: Check | Create user, db and tables | Download and Run sql scripts.
+  block:
+
+    - name: PostgreSQL ping postgresql server
+      postgresql_ping:
+      register: result
+
+    - name: Message about
+      fail:
+       msg: "Postgresql is not installed"
+      when: not result.is_available
+
+    - name: "create user"
+      postgresql_user:
+        name: "{{ component_user}}"
+        password: "{{ component_password }}"
+        state: present
+        encrypted: yes
+
+    - name: Create tablespace directory.
+      file: 
+        path: "{{ component_tablespace_location }}"
+        state: directory
+        owner: postgres
+        group: postgres
+        recurse: yes
+      when: component_tablespace is defined
+
+    - name: Create a new tablespace.
+      postgresql_tablespace:
+        name: "{{ component_tablespace }}"
+        owner: "{{ component_user }}"
+        location: "{{ component_tablespace_location }}"
+      when: component_tablespace is defined
+       
+    - name: Create a new database. 
+      postgresql_db:
+        name: "{{ component_db }}"
+        encoding: UTF-8
+        owner: "{{ component_user }}"
+        tablespace: "{{ component_tablespace }}"
+      when: component_tablespace is defined
+
+    - name: Create a new database. 
+      postgresql_db:
+        name: "{{ component_db }}"
+        encoding: UTF-8
+        owner: "{{ component_user }}"
+      when: component_tablespace is not defined
+
+    - name: Create schema.
+      postgresql_schema:
+        database: "{{ component_db }}"
+        name: "{{ component_schema }}"
+        owner: "{{ component_user }}"
+      when:  component_schema is defined
+    
+
+    - name: Download sql scripts.
+      get_url:
+        url: "{{ component_nexus_url }}/{{ item }}"
+        dest: "/tmp/"
+        owner: "{{ postgresql_user }}"
+        group: "{{ postgresql_group }}"
+      with_items:
+        - "{{ component_sql_files }}"
+
+    - name: Run sql script.
+      postgresql_exec:
+        remote_src: yes
+        src: "/tmp/{{ item }}"
+        host: 127.0.0.1
+        database: "{{  component_db }}"
+        user: "{{  component_user }}"
+        password: "{{ component_password }}"
+      with_items:
+        - "{{ component_sql_files }}"
+
+    - name: Dump database to a file.
+      postgresql_db:
+        name: "{{ component_db }}"
+        state: dump
+        target: "/var/lib/pgsql/dump-{{ component_db }}-{{ ansible_date_time.date }}.sql" 
+
+  become: yes
+  become_user: "{{ postgresql_user }}"
+
+

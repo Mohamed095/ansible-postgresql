@@ -1,0 +1,5 @@
+- hosts: pdata
+  remote_user: root
+  roles:
+    - undeploy-postgresql-db-common
+

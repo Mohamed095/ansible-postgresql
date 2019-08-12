@@ -1,0 +1,16 @@
+---
+# defaults file for postgresql-db-sla
+
+component_name: "sla_quartz"
+postgresql_user: "postgres"
+postgresql_group: "postgres"
+component_version: "2"
+component_user: "sla_quartz_user"
+component_password: "sla_quartz_pass"
+component_tablespace: "sla_quartz_tablespace"
+component_nexus_url: "http://{{ nexus_ip }}:{{ nexus_port }}/repository/dyco-raw-group/databases/postgresql/{{ component_name }}/{{ component_version }}"
+component_tablespace_location: "/var/lib/pgsql/tablespaces/sla_quartz/data"
+component_db: "sla_quartz"
+component_schema: "sla_quartz"
+component_sql_files:
+  - "sla-quartz.sql"

@@ -1,0 +1,88 @@
+---
+# tasks file for postgresql-standalone
+
+- name: ensure mandatory variables are set
+  fail:
+    msg: "{{ item }} is a mandatory variable"
+  when:  "{{ item }} is not defined"
+  loop:
+    - postgresql_version
+    - postgresql_version_major
+    - postgresql_version_minor
+    - postgresql_packages
+    - common_packages
+
+- name: Create /tmp/postgresql/ folder.
+  file:
+    path: "{{ remote_rpm_path }}"
+    state: directory
+    owner: "{{ hes_user }}"
+    group: "{{ hes_group }}"
+    mode: 0755
+    recurse: yes
+
+- name:  Adding Nexus Repo.
+  yum_repository:
+    name: "{{ nexus_redhat_repo_info['name'] }}"
+    description: "{{ nexus_redhat_repo_info['description'] }}"
+    baseurl: "{{ nexus_redhat_repo_info['baseurl'] }}"
+    enabled: "{{ nexus_redhat_repo_info['enabled'] }}"
+    state: present
+    gpgcheck: no
+  become: true
+
+- name: Install package.
+  yum: 
+     name: "{{ item.package }}"
+     state: present
+  with_items: "{{ postgresql_packages }}"
+
+- name: Install postgresql common packages.
+  yum:
+    name: "{{ item.package }}"
+    state: latest
+  with_items: "{{ common_packages }}"
+  tags: commonpackages
+
+- name: Ensure PostgreSQL data directory exists.
+  file:
+    path: "{{ postgresql_data_dir }}"
+    owner: "{{ postgresql_user }}"
+    group: "{{ postgresql_group }}"
+    state: directory
+    mode: 0700
+
+- name: Check if PostgreSQL database is initialized.
+  stat:
+    path: "{{ postgresql_data_dir }}/PG_VERSION"
+  register: pgdata_dir_version
+
+- name: initialize postgre environment
+  shell: "{{ postgresql_usr_bin }}"
+  when:  pgdata_dir_version.stat.exists  == False
+
+- name: Configure global settings.
+  template:
+    src: "postgresql.conf.j2"
+    dest: "{{ postgresql_conf_dir }}/{{ postgresql_conf }}"
+    owner: "{{ postgresql_user }}"
+    group: "{{ postgresql_group }}"
+    mode: 0600
+  when: pgdata_dir_version.stat.exists  == False
+
+- name: Configure host based authentication (if entries are configured).
+  template:
+    src: "pg_hba.conf.j2"
+    dest: "{{ postgresql_conf_dir }}/pg_hba.conf"
+    owner: "{{ postgresql_user }}"
+    group: "{{ postgresql_group }}"
+    mode: 0600
+  when: postgresql_hba_entries and pgdata_dir_version.stat.exists  == False
+
+
+- name: Reload systemd
+  systemd:
+    daemon-reload: yes
+    enabled: yes
+    state: started
+    name: postgresql-11

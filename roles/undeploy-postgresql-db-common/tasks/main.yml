@@ -1,0 +1,30 @@
+---
+# tasks file for undeploy-postgresql-db-common
+
+- name: Dropping db,tables and user. 
+  block:
+    - name: Drop database.
+      postgresql_db:
+        name: "{{ component_db }}"
+        encoding: UTF-8
+        owner: "{{ component_user }}"
+        state: absent
+
+    - name: Drop tablespace.
+      postgresql_tablespace:
+        name: "{{ component_tablespace }}"
+        state: absent
+      when: component_tablespace is undefined
+
+    - name: Drop user.
+      postgresql_user:
+        name: "{{ component_user}}"
+        password: "{{ component_password }}"
+        state: absent
+        encrypted: yes
+  become: yes
+  become_user: "{{ postgresql_user }}"
+
+
+         
+

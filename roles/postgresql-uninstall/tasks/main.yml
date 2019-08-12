@@ -1,0 +1,24 @@
+---
+# tasks file for postgresql-uninstall.uninstall
+- name: Remove package.
+  yum: 
+     name: "{{ item.package }}"
+     state: absent
+  with_items: "{{ postgresql_packages }}"
+
+- name: redhat | Removing Nexus Repo
+  yum_repository:
+    name: "{{ nexus_redhat_repo_info['name'] }}"
+    state: absent
+  become: true
+
+- name: Create remote facts directory
+  file:
+    state: directory
+    recurse: yes
+    path: "{{ ansible_facts_folder }}"
+
+- name: Set Version in remote facts file
+  template:
+    src: postgresql.fact.j2
+    dest: "{{ ansible_facts_folder }}/postgresql.fact"

@@ -1,0 +1,22 @@
+- hosts: pdata
+  remote_user: root
+  tasks:
+    - name: Create group for postgresql.
+      group:
+        name: "{{ hes_group }}"
+        gid: "3001"
+        state: present
+
+    - name: Create user for postgresql.
+      user:
+        name: "{{ hes_user }}"
+        uid: "2004"
+        group: "{{ hes_group }}"
+        state: present
+
+    - name: Set  hostname as mentionned in incentory file.
+      hostname:
+        name: "{{ inventory_hostname }}" 
+
+    - include_role:
+        name: postgresql-standalone

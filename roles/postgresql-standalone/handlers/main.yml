@@ -1,0 +1,18 @@
+---
+# handlers file for postgresql-standalone
+
+#- name: Reload systemd
+#  systemd:
+#    daemon-reload: yes
+#    enabled: yes
+#    state: restarted
+#    name: "{{ postgresql_name }}"
+ 
+- name: reload systemd configuration
+  become: yes
+  command: systemctl daemon-reload
+
+
+- name: restart postgresql
+  become: yes
+  service: name= "{{ postgresql_name }}" state=restarted enabled=yes  
